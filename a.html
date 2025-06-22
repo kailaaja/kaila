@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floating Hearts Animation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 0, 100, 0.8);
+        }
+        
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.7;
+            font-size: 20px;
+            color: #ff3366;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .btn {
+            background: #ff3366;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 51, 102, 0.4);
+        }
+        
+        .btn:hover {
+            background: #ff1a4d;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 51, 102, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>For Someone Special</h1>
+        <p>Click anywhere to create hearts</p>
+        <button class="btn" id="autoBtn">Auto Hearts Mode</button>
+    </div>
+
+    <script>
+        const body = document.body;
+        const autoBtn = document.getElementById('autoBtn');
+        let autoMode = false;
+        let autoInterval;
+        
+        // Create hearts on click
+        body.addEventListener('click', (e) => {
+            createHeart(e.clientX, e.clientY);
+        });
+        
+        // Auto hearts mode
+        autoBtn.addEventListener('click', () => {
+            autoMode = !autoMode;
+            autoBtn.textContent = autoMode ? 'Stop Auto Mode' : 'Auto Hearts Mode';
+            
+            if (autoMode) {
+                autoInterval = setInterval(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = window.innerHeight;
+                    createHeart(x, y);
+                }, 300);
+            } else {
+                clearInterval(autoInterval);
+            }
+        });
+        
+        // Create a single heart
+        function createHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '❤️';
+            heart.style.left = `${x}px`;
+            heart.style.top = `${y}px`;
+            heart.style.fontSize = `${Math.random() * 30 + 10}px`;
+            heart.style.animationDuration = `${Math.random() * 4 + 3}s`;
+            
+            document.body.appendChild(heart);
+            
+            // Remove heart after animation completes
+            setTimeout(() => {
+                heart.remove();
+            }, 6000);
+        }
+        
+        // Create initial hearts
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+                createHeart(x, y);
+            }, i * 300);
+        }
+    </script>
+</body>
+</html>
