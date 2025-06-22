@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Click Challenge</title>
+    <title>100 Click Challenge</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgbheTLe-X84GFunLQtHctPSlTIb88atu1vw1pTWCvcGn5wEu1MeSz4nI&s=10') no-repeat center center fixed;
-            background-size: cover;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,20 +20,31 @@
             font-family: 'Arial', sans-serif;
             text-align: center;
             cursor: pointer;
+            overflow: hidden;
+            user-select: none;
+            touch-action: manipulation;
         }
         
         .container {
             background-color: rgba(255, 255, 255, 0.9);
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            max-width: 80%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            transition: transform 0.2s;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .container:active {
+            transform: scale(0.98);
         }
         
         h1 {
             color: #ff6b6b;
             font-size: 2.5em;
             margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
         
         #counter {
@@ -38,6 +52,24 @@
             color: #ff6b6b;
             margin: 20px 0;
             transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #progress-container {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+            border-radius: 10px;
+            transition: width 0.3s;
         }
         
         #message {
@@ -46,28 +78,91 @@
             height: 0;
             overflow: hidden;
             transition: all 0.5s;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         
         #message.show {
             height: auto;
             margin-top: 30px;
+            animation: bounce 0.5s;
         }
         
-        .heart {
+        .click-effect {
             position: absolute;
-            font-size: 30px;
-            color: #ff6b6b;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 107, 107, 0.7);
+            border-radius: 50%;
             pointer-events: none;
-            animation: float 3s ease-in-out forwards;
+            animation: clickPulse 0.5s ease-out forwards;
+            z-index: 5;
         }
         
-        @keyframes float {
+        .confetti {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #f00;
+            opacity: 0;
+            pointer-events: none;
+            animation: confettiFall 3s linear forwards;
+        }
+        
+        @keyframes clickPulse {
             0% {
-                transform: translateY(0) scale(1);
+                transform: scale(0.5);
                 opacity: 1;
             }
             100% {
-                transform: translateY(-100px) scale(1.5);
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .celebrate {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            display: none;
+        }
+        
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 5px;
+            animation: explode 1s ease-out forwards;
+        }
+        
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(30);
                 opacity: 0;
             }
         }
@@ -75,24 +170,36 @@
 </head>
 <body>
     <div class="container">
-        <h1>Tekan 10 Kali!</h1>
+        <h1>Click 100 Times!</h1>
         <div id="counter">0</div>
-        <div id="message">Selamat Hari Minggu!</div>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="message">Congratulations! You did it! 🎉</div>
     </div>
+    
+    <div class="celebrate" id="celebrate"></div>
 
     <script>
         const body = document.body;
         const counter = document.getElementById('counter');
         const message = document.getElementById('message');
+        const progressBar = document.getElementById('progress-bar');
+        const celebrateDiv = document.getElementById('celebrate');
         let clickCount = 0;
+        const targetClicks = 100;
         
         body.addEventListener('click', (e) => {
-            // Create heart animation at click position
-            createHeart(e.clientX, e.clientY);
+            // Create click effect
+            createClickEffect(e.clientX, e.clientY);
             
             // Increment counter
             clickCount++;
             counter.textContent = clickCount;
+            
+            // Update progress bar
+            const progressPercent = (clickCount / targetClicks) * 100;
+            progressBar.style.width = `${progressPercent}%`;
             
             // Pulse animation for counter
             counter.style.transform = 'scale(1.2)';
@@ -100,37 +207,107 @@
                 counter.style.transform = 'scale(1)';
             }, 200);
             
-            // Check if reached 10 clicks
-            if (clickCount === 10) {
+            // Check if reached target clicks
+            if (clickCount === targetClicks) {
                 setTimeout(() => {
                     message.classList.add('show');
-                    // Confetti effect
-                    for (let i = 0; i < 50; i++) {
-                        setTimeout(() => {
-                            createHeart(
-                                Math.random() * window.innerWidth,
-                                window.innerHeight
-                            );
-                        }, i * 100);
-                    }
+                    celebrate();
                 }, 500);
             }
         });
         
-        function createHeart(x, y) {
-            const heart = document.createElement('div');
-            heart.className = 'heart';
-            heart.innerHTML = '❤️';
-            heart.style.left = `${x}px`;
-            heart.style.top = `${y}px`;
-            heart.style.fontSize = `${Math.random() * 20 + 20}px`;
+        function createClickEffect(x, y) {
+            const effect = document.createElement('div');
+            effect.className = 'click-effect';
+            effect.style.left = `${x - 15}px`;
+            effect.style.top = `${y - 15}px`;
             
-            document.body.appendChild(heart);
+            // Random color for effect
+            const hue = Math.random() * 60 + 350; // Red/pink range
+            effect.style.background = `hsla(${hue}, 100%, 70%, 0.7)`;
             
-            // Remove heart after animation
+            document.body.appendChild(effect);
+            
+            // Remove effect after animation
             setTimeout(() => {
-                heart.remove();
-            }, 3000);
+                effect.remove();
+            }, 500);
+        }
+        
+        function celebrate() {
+            celebrateDiv.style.display = 'block';
+            
+            // Create fireworks
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    createFirework();
+                }, i * 300);
+            }
+            
+            // Create confetti
+            for (let i = 0; i < 150; i++) {
+                setTimeout(() => {
+                    createConfetti();
+                }, i * 50);
+            }
+        }
+        
+        function createFirework() {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            
+            // Random position
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight * 0.8;
+            
+            // Random color
+            const hue = Math.random() * 360;
+            firework.style.left = `${x}px`;
+            firework.style.top = `${y}px`;
+            firework.style.boxShadow = `0 0 10px 5px hsl(${hue}, 100%, 50%)`;
+            firework.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+            
+            celebrateDiv.appendChild(firework);
+            
+            // Remove after animation
+            setTimeout(() => {
+                firework.remove();
+            }, 1000);
+        }
+        
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            // Random position at top
+            const x = Math.random() * window.innerWidth;
+            
+            // Random color
+            const hue = Math.random() * 360;
+            confetti.style.left = `${x}px`;
+            confetti.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+            
+            // Random shape
+            if (Math.random() > 0.5) {
+                confetti.style.borderRadius = '0';
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+            }
+            
+            // Random size
+            const size = Math.random() * 10 + 5;
+            confetti.style.width = `${size}px`;
+            confetti.style.height = `${size}px`;
+            
+            // Random animation duration
+            const duration = Math.random() * 2 + 2;
+            confetti.style.animationDuration = `${duration}s`;
+            
+            document.body.appendChild(confetti);
+            
+            // Remove after animation
+            setTimeout(() => {
+                confetti.remove();
+            }, duration * 1000);
         }
     </script>
 </body>
